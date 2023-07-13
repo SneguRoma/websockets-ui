@@ -1,19 +1,23 @@
-import WebSocket, { WebSocketServer } from "ws";
-import { playersDB } from "..";
-import { v4 as uuidv4 } from "uuid";
 
-export function handlePlayerReg(data: any, id: string, wss: WebSocketServer) {
-  const { name, password } = data;  
+import WebSocket, { WebSocketServer } from "ws";
+import { playersDB } from "../utils/constants";
+//import { v4 as uuidv4 } from "uuid";
+
+ let playerIndex = 0;
+
+export function handlePlayerReg(data: any,  wss: WebSocketServer) {
+  const { name, password } = data;
+  
 
   if (!name || !password) {
-    sendPlayerRegResp(wss, id, null, true, "Invalid registration data");
+    sendPlayerRegResp(wss, /* wsId, */ null, true, "Invalid registration data");
     return;
   }
 
   if (Object.values(playersDB).some((player) => player.name === name)) {
     sendPlayerRegResp(
       wss,
-      id,
+      
       null,
       true,
       "Player with the same name already exists"
@@ -21,23 +25,24 @@ export function handlePlayerReg(data: any, id: string, wss: WebSocketServer) {
     return;
   }
 
-  const playerId = uuidv4();
-  playersDB[playerId] = { name, password };
-  console.log('playersDB[playerId]',playersDB[playerId])
+  //const playerId = uuidv4();
+  playersDB.push({ name, password, index: playerIndex });
+  
   sendPlayerRegResp(
     wss,
-    id,
-    { name, index: Object.keys(playersDB).length - 1 },
+    
+    { name, index: playerIndex },
     false,
     ""
   );
 
   console.log(`Player registered: ${name}`);
+  playerIndex++;
 }
 
 function sendPlayerRegResp(
   wss: WebSocketServer,
-  id: string,
+  
   data: any,
   error: boolean,
   errorText: string
@@ -53,11 +58,12 @@ function sendPlayerRegResp(
   const response = JSON.stringify({
     type: "reg",
     data: dataJSON,
-    id,
+    id: 0,
   });  
-    
+  console.log('dataJSON', dataJSON);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
+      
       client.send(response);
     } 
   });
