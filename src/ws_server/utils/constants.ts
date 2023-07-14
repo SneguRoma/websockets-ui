@@ -1,21 +1,22 @@
+
 export const playersDB: Iplayer[] = [];
 
-export let gameIndex = 0;
-
-export const roomsDB: {
-  [id: string]: {
-    id: string;
-    players: IRoomPlayer[];
-    ships: { [playerId: string]: any[]; };
-  };
-} = {};
+export const roomsDB: IroomsDB[] = [];
 
 export interface Iplayer {
   name: string;
   password: string;
   index: number;
+  wsId: string;
+  wins: number;
 }
 export interface IRoomPlayer {
   name: string;
-  index: string;
+  index: number;
+}
+
+export interface IroomsDB{
+  id: number;
+  players: IRoomPlayer[];
+  ships: { [playerId: string]: any[]; };
 }

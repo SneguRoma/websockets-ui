@@ -1,41 +1,41 @@
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 import WebSocket, { WebSocketServer } from "ws";
-//import { playersDB, roomsDB } from "..";
+
 import { playersDB, roomsDB } from "../utils/constants";
 
-export interface IRoomPlayer {
-  name: string;
-  password: string; 
-}
+let roomId = 0;
 
 export function handleCreateRoom(wsId: string, wss: WebSocketServer) {
-  const roomId = uuidv4();
-  console.log(`playersDB ${playersDB[0]?.name}`, 'wsId',wsId);
-  roomsDB[roomId] = {
+  
+  let player = playersDB.find((item) => item.wsId === wsId);
+  //console.log(`player ${player?.wsId}`, "wsId", wsId);
+  roomsDB.push({
     id: roomId,
-    players: [{ name: playersDB[0]?.name ?? "", index: wsId }],
+    players: [{ name: player?.name ?? "", index: player?.index ?? 10 }],
     ships: {},
-  };
+  });
 
-  sendCreateRoomResponse(wsId, roomId, wss);
-  updateRoomState(/* wss, */ wsId);
+  sendCreateRoomResponse(player?.index ?? 1, roomId, wss);
+  updateRoomState(wss);
   console.log(`Room created: ${roomId}`);
+  roomId++;
 }
 
 function sendCreateRoomResponse(
-  wsId: string,
-  roomId: string,
+  id: number,
+  roomId: number,
   wss: WebSocketServer
 ) {
+  const dataJSON = JSON.stringify({
+    idGame: roomId,
+    idPlayer: id,
+  });
   const response = JSON.stringify({
     type: "create_game",
-    data: {
-      idGame: roomId,
-      idPlayer: parseInt(wsId),
-    },
+    data: dataJSON,
     id: 0,
   });
-
+  //console.log("response", response);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(response);
@@ -43,35 +43,36 @@ function sendCreateRoomResponse(
   });
 }
 
-function updateRoomState(/* wss: WebSocketServer, */ wsId: string) {
-  console.log('Object.values(roomsDB)', Object.values(roomsDB)[0]?.players)
-  const rooms = Object.values(roomsDB).map((room) => {
+export function updateRoomState(wss: WebSocketServer /**/ /* wsId: string */) {
+  //console.log("Object.values(roomsDB)", roomsDB[0], roomsDB[1]);
+  const rooms = roomsDB.map((room) => {
     if (room.players.length === 1) {
-      return {
+      return /* JSON.stringify( */{
         roomId: room.id,
         roomUsers: [
-          {
-            name: playersDB[0]?.name ?? "",
-            index: parseInt(wsId),
-          },
-        ],
-      };
+          /* JSON.stringify( */{
+            name: room.players[0]?.name,
+            index: room.players[0]?.index,
+          }/* ) */,
+        ]
+      }/* ) */;
     }
   });
 
-  console.log('rooms', rooms);
+  //console.log("rooms", rooms);
 
-  //const roomUsersJson = 
+  //const roomUsersJson =
 
   const response = JSON.stringify({
     type: "update_room",
-    data: rooms,
+    data: /* (rooms.length!==0) ?  */JSON.stringify(rooms) /* : [] */,
     id: 0,
   });
-  console.log('response', response);
- /* wss.clients.forEach((client) => {
+  console.log("response", response);
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(response);
     }
-  }); */
+  });
+  console.log(`Rooms updated`);
 }

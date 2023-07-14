@@ -5,12 +5,12 @@ import { playersDB } from "../utils/constants";
 
  let playerIndex = 0;
 
-export function handlePlayerReg(data: any,  wss: WebSocketServer) {
+export function handlePlayerReg(data: any, wsId:string,  wss: WebSocketServer) {
   const { name, password } = data;
   
 
   if (!name || !password) {
-    sendPlayerRegResp(wss, /* wsId, */ null, true, "Invalid registration data");
+    sendPlayerRegResp(wss,  null, true, "Invalid registration data");
     return;
   }
 
@@ -26,7 +26,7 @@ export function handlePlayerReg(data: any,  wss: WebSocketServer) {
   }
 
   //const playerId = uuidv4();
-  playersDB.push({ name, password, index: playerIndex });
+  playersDB.push({ name, password, index: playerIndex, wsId, wins: 0 });
   
   sendPlayerRegResp(
     wss,
@@ -60,7 +60,7 @@ function sendPlayerRegResp(
     data: dataJSON,
     id: 0,
   });  
-  console.log('dataJSON', dataJSON);
+  //console.log('dataJSON', dataJSON);
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       

@@ -1,33 +1,37 @@
 import WebSocket, { WebSocketServer } from "ws";
 import { handlePlayerReg } from "./handlers/handlePlayerReg";
 import { v4 as uuidv4 } from "uuid";
-import { handleCreateRoom } from "./handlers/handleCreateRoom";
+import { handleCreateRoom, updateRoomState } from "./handlers/handleCreateRoom";
+import { updateWinners } from "./handlers/updateWinners";
+import { roomsDB } from "./utils/constants";
 
 export const wsServer = (port: number) => {
   const wss = new WebSocketServer({ port });
 
   wss.on("connection", (ws: WebSocket) => {
     console.log("new connection created");
+    const wsId = uuidv4();
     ws.on("message", (message: string) => {
-      const wsId = uuidv4();
       try {
-        const { type, data, id } = JSON.parse(message);
-        console.log("data", data);
+        const { type, data } = JSON.parse(message);
+        //console.log("data", data);
 
         console.log(
-          `Received command: ${type}Data: ${JSON.stringify(data)}  id ${id}`
+          `Received command: ${type}Data: ${JSON.stringify(data)}`
         );
         switch (type) {
           case "reg":
             const dataObject = JSON.parse(data);
-            handlePlayerReg(dataObject, /* wsId, */ wss);
+            handlePlayerReg(dataObject, wsId, wss);
+            if(roomsDB.length !==0) updateRoomState(wss);
+            updateWinners(wss);
             break;
           case "create_room":
             handleCreateRoom(wsId, wss);
             break;
         }
       } catch (error) {
-        console.error("something went wrong");
+        console.error("something went wrong", error);
         //sendErrorResponse(id, "Internal server error");
       }
     });
