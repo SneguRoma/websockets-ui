@@ -15,13 +15,13 @@ export function handleCreateRoom(wsId: string, wss: WebSocketServer) {
     ships: {},
   });
 
-  sendCreateRoomResponse(player?.index ?? 1, roomId, wss);
+  //sendCreateRoomResponse(player?.index ?? 1, roomId, wss);
   updateRoomState(wss);
   console.log(`Room created: ${roomId}`);
   roomId++;
 }
 
-function sendCreateRoomResponse(
+export function sendCreateGameResponse(
   id: number,
   roomId: number,
   wss: WebSocketServer
@@ -45,8 +45,8 @@ function sendCreateRoomResponse(
 
 export function updateRoomState(wss: WebSocketServer /**/ /* wsId: string */) {
   //console.log("Object.values(roomsDB)", roomsDB[0], roomsDB[1]);
-  const rooms = roomsDB.map((room) => {
-    if (room.players.length === 1) {
+  const rooms = roomsDB.filter((room) => (room.players.length === 1) ).map((room) => {
+    
       return /* JSON.stringify( */{
         roomId: room.id,
         roomUsers: [
@@ -56,23 +56,49 @@ export function updateRoomState(wss: WebSocketServer /**/ /* wsId: string */) {
           }/* ) */,
         ]
       }/* ) */;
-    }
+    
   });
 
-  //console.log("rooms", rooms);
+  //console.log("rooms[0]", rooms);
 
-  //const roomUsersJson =
-
+ /*  const nullResponse = JSON.stringify({
+    type: "update_room",
+    data: JSON.stringify([]),
+    id: 0,
+  }); */
   const response = JSON.stringify({
     type: "update_room",
-    data: /* (rooms.length!==0) ?  */JSON.stringify(rooms) /* : [] */,
+    data: JSON.stringify(rooms) ,
     id: 0,
   });
-  console.log("response", response);
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(response);
-    }
-  });
+  //console.log("response", response);
+  
+  //if (rooms) {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+         client.send(response);
+        
+          
+        
+      }
+    });
+  //}
+  /* else {
+    wss.clients.forEach((client) => {
+      
+      if (client.readyState === WebSocket.OPEN) {
+        
+
+        console.log('nullResponse', nullResponse);
+        client.send(nullResponse);
+
+      }
+    });
+  } */
+
+    
+    
+
+  
   console.log(`Rooms updated`);
 }

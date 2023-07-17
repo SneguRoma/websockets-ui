@@ -3,10 +3,12 @@ import { handlePlayerReg } from "./handlers/handlePlayerReg";
 import { v4 as uuidv4 } from "uuid";
 import { handleCreateRoom, updateRoomState } from "./handlers/handleCreateRoom";
 import { updateWinners } from "./handlers/updateWinners";
-import { roomsDB } from "./utils/constants";
+//import { roomsDB } from "./utils/constants";
+import { handleAddPlayerToRoom } from "./handlers/handleAddPlayerToRoom";
 
 export const wsServer = (port: number) => {
   const wss = new WebSocketServer({ port });
+  //let dataObject = {};
 
   wss.on("connection", (ws: WebSocket) => {
     console.log("new connection created");
@@ -15,6 +17,7 @@ export const wsServer = (port: number) => {
       try {
         const { type, data } = JSON.parse(message);
         //console.log("data", data);
+        //if (data !== '')  dataObject = JSON.parse(data);;
 
         console.log(
           `Received command: ${type}Data: ${JSON.stringify(data)}`
@@ -22,12 +25,16 @@ export const wsServer = (port: number) => {
         switch (type) {
           case "reg":
             const dataObject = JSON.parse(data);
-            handlePlayerReg(dataObject, wsId, wss);
-            if(roomsDB.length !==0) updateRoomState(wss);
+            handlePlayerReg(dataObject, wsId, ws);
+            /* if(roomsDB.length !==0) */ updateRoomState(wss);
             updateWinners(wss);
             break;
           case "create_room":
             handleCreateRoom(wsId, wss);
+            break;
+          case "add_user_to_room":
+            const dataAdd = JSON.parse(data);
+            handleAddPlayerToRoom(wsId, wss, dataAdd.indexRoom);
             break;
         }
       } catch (error) {

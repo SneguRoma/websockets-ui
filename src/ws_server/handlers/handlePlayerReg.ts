@@ -1,22 +1,22 @@
 
-import WebSocket, { WebSocketServer } from "ws";
+import WebSocket/* , { WebSocketServer } */ from "ws";
 import { playersDB } from "../utils/constants";
 //import { v4 as uuidv4 } from "uuid";
 
  let playerIndex = 0;
 
-export function handlePlayerReg(data: any, wsId:string,  wss: WebSocketServer) {
+export function handlePlayerReg(data: any, wsId: string, ws: WebSocket /* wss: WebSocketServer */) {
   const { name, password } = data;
   
 
   if (!name || !password) {
-    sendPlayerRegResp(wss,  null, true, "Invalid registration data");
+    sendPlayerRegResp(ws,  null, true, "Invalid registration data");
     return;
   }
 
   if (Object.values(playersDB).some((player) => player.name === name)) {
     sendPlayerRegResp(
-      wss,
+      ws,
       
       null,
       true,
@@ -29,7 +29,7 @@ export function handlePlayerReg(data: any, wsId:string,  wss: WebSocketServer) {
   playersDB.push({ name, password, index: playerIndex, wsId, wins: 0 });
   
   sendPlayerRegResp(
-    wss,
+    ws,
     
     { name, index: playerIndex },
     false,
@@ -41,7 +41,7 @@ export function handlePlayerReg(data: any, wsId:string,  wss: WebSocketServer) {
 }
 
 function sendPlayerRegResp(
-  wss: WebSocketServer,
+  ws: WebSocket,
   
   data: any,
   error: boolean,
@@ -61,10 +61,12 @@ function sendPlayerRegResp(
     id: 0,
   });  
   //console.log('dataJSON', dataJSON);
-  wss.clients.forEach((client) => {
+  ws.send(response)
+  /* wss.clients.forEach((client) => {
+    console.log('client',client)
     if (client.readyState === WebSocket.OPEN) {
       
       client.send(response);
     } 
-  });
+  }); */
 }
