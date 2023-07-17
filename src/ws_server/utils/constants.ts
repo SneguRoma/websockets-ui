@@ -1,4 +1,3 @@
-
 export const playersDB: Iplayer[] = [];
 
 export const roomsDB: IroomsDB[] = [];
@@ -15,8 +14,19 @@ export interface IRoomPlayer {
   index: number;
 }
 
-export interface IroomsDB{
+export interface IroomsDB {
   id: number;
   players: IRoomPlayer[];
-  ships: { [playerId: string]: any[]; };
+  ships: { [playerName: string]: IShips[]; };
+
+}
+
+export interface IShips {
+  position: {
+    x: number;
+    y: number;
+  };
+  direction: boolean;
+  length: number;
+  type: "small" | "medium" | "large" | "huge";
 }
