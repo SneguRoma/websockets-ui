@@ -2,6 +2,11 @@ export const playersDB: Iplayer[] = [];
 
 export const roomsDB: IroomsDB[] = [];
 
+
+export interface WebSocketWithId extends WebSocket {
+  wsId?: string;
+}
+
 export interface Iplayer {
   name: string;
   password: string;
@@ -12,6 +17,7 @@ export interface Iplayer {
 export interface IRoomPlayer {
   name: string;
   index: number;
+  wsId?: string;
 }
 
 export interface IroomsDB {
